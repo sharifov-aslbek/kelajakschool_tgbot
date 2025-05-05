@@ -4,6 +4,8 @@ from telegram import (
     InlineKeyboardMarkup,
     KeyboardButton,
     ReplyKeyboardMarkup,
+    ReplyKeyboardRemove,
+    BotCommand,
 )
 from telegram.ext import (
     ApplicationBuilder,
@@ -16,12 +18,11 @@ from telegram.ext import (
 from dotenv import load_dotenv
 import os
 
-load_dotenv()  
+load_dotenv()
 
-# Tokenni olish
 TOKEN = os.getenv("TOKEN")
 if not TOKEN:
-    raise ValueError("7580446562:AAF6GnQlh_9cCZ5SnXOTUZ83FRphYUuaUxA not found in .env file.")
+    raise ValueError("TOKEN not found in .env file.")
 
 # Tugmalar ro'yxati
 BUTTONS = {
@@ -33,17 +34,25 @@ BUTTONS = {
 
 # /start komandasi
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await context.bot.set_my_commands([
+        BotCommand("menu", "📋 Xizmatlar menyusi")
+    ])
+    await update.message.reply_text("Assalomu alaykum! Pastdagi menyudan foydalaning.")
+
+# /menu komandasi
+async def menu_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [[InlineKeyboardButton(k, callback_data=k)] for k in BUTTONS]
     await update.message.reply_text(
         "Iltimos, birini tanlang:",
         reply_markup=InlineKeyboardMarkup(keyboard)
     )
 
-# Inline tugma handler
+# Inline tugma bosilganda
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
 
+    # Telefon raqami bo'lmasa so'raymiz
     if not context.user_data.get("phone_number"):
         contact_button = KeyboardButton("📱 Raqam yuborish", request_contact=True)
         contact_keyboard = ReplyKeyboardMarkup(
@@ -58,38 +67,23 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = BUTTONS.get(query.data, "Topilmadi.")
     await query.edit_message_text(text)
 
-# Raqam qabul qilganda
+# Telefon raqami qabul qilganda
 async def contact_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     contact = update.message.contact
     if contact:
         context.user_data["phone_number"] = contact.phone_number
 
-        select_buttons = [
-            [KeyboardButton("🧩 Tugmalarni tanlash")]
-        ]
-        reply_markup = ReplyKeyboardMarkup(select_buttons, resize_keyboard=True, one_time_keyboard=True)
-
         await update.message.reply_text(
-            "✅ Raqamingiz qabul qilindi.\n\nTugmalarni tanlash uchun pastdagi tugmani bosing.",
-            reply_markup=reply_markup
-        )
-
-# "Tugmalarni tanlash" tugmasi bosilganda
-async def show_buttons_again(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.message.text == "🧩 Tugmalarni tanlash":
-        keyboard = [[InlineKeyboardButton(k, callback_data=k)] for k in BUTTONS]
-        await update.message.reply_text(
-            "Iltimos, birini tanlang:",
-            reply_markup=InlineKeyboardMarkup(keyboard)
+            "✅ Raqamingiz qabul qilindi. Endi menyudan foydalanishingiz mumkin.",
+            reply_markup=ReplyKeyboardRemove()
         )
 
 if __name__ == '__main__':
     app = ApplicationBuilder().token(TOKEN).build()
 
     app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("menu", menu_command))
     app.add_handler(CallbackQueryHandler(button_handler))
     app.add_handler(MessageHandler(filters.CONTACT, contact_handler))
-    app.add_handler(MessageHandler(filters.TEXT & filters.Regex("🧩 Tugmalarni tanlash"), show_buttons_again))
 
-    # Handling graceful shutdown
     app.run_polling(drop_pending_updates=True)
