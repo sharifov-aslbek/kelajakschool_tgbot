@@ -4,7 +4,6 @@ from telegram import (
     InlineKeyboardMarkup,
     KeyboardButton,
     ReplyKeyboardMarkup,
-    ReplyKeyboardRemove,
 )
 from telegram.ext import (
     ApplicationBuilder,
@@ -14,6 +13,14 @@ from telegram.ext import (
     ContextTypes,
     filters,
 )
+from dotenv import load_dotenv
+import os
+
+# .env faylini yuklash
+load_dotenv()
+
+# Tokenni olish
+TOKEN = os.getenv("BOT_TOKEN")
 
 # Tugmalar ro'yxati
 BUTTONS = {
@@ -22,7 +29,6 @@ BUTTONS = {
     "🏨 Yotoqxona xizmati": "Tugma 3 matni",
     "📞 Bog'lanish": "Tugma 4 matni",
 }
-
 
 # /start komandasi
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -38,7 +44,6 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await query.answer()
 
     if not context.user_data.get("phone_number"):
-        # Raqam so'rash
         contact_button = KeyboardButton("📱 Raqam yuborish", request_contact=True)
         contact_keyboard = ReplyKeyboardMarkup(
             [[contact_button]], resize_keyboard=True, one_time_keyboard=True
@@ -49,7 +54,6 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return
 
-    # Agar raqam bor bo‘lsa tugma ishlaydi
     text = BUTTONS.get(query.data, "Topilmadi.")
     await query.edit_message_text(text)
 
@@ -59,7 +63,6 @@ async def contact_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if contact:
         context.user_data["phone_number"] = contact.phone_number
 
-        # "Tugmalarni tanlash" tugmasi
         select_buttons = [
             [KeyboardButton("🧩 Tugmalarni tanlash")]
         ]
@@ -80,7 +83,7 @@ async def show_buttons_again(update: Update, context: ContextTypes.DEFAULT_TYPE)
         )
 
 if __name__ == '__main__':
-    app = ApplicationBuilder().token("7580446562:AAF6GnQlh_9cCZ5SnXOTUZ83FRphYUuaUxA").build()
+    app = ApplicationBuilder().token(TOKEN).build()
 
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CallbackQueryHandler(button_handler))
