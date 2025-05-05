@@ -38,30 +38,32 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # /menu komandasi
 async def menu_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not context.user_data.get("phone_number"):
+        contact_button = KeyboardButton("📱 Raqam yuborish", request_contact=True)
+        contact_keyboard = ReplyKeyboardMarkup(
+            [[contact_button]], resize_keyboard=True, one_time_keyboard=True
+        )
+        await update.message.reply_text(
+            "Iltimos, avval telefon raqamingizni yuboring:",
+            reply_markup=contact_keyboard
+        )
+        return
+
     keyboard = [[InlineKeyboardButton(k, callback_data=k)] for k in BUTTONS]
     await update.message.reply_text(
         "Iltimos, birini tanlang:",
         reply_markup=InlineKeyboardMarkup(keyboard)
     )
 
+
 # Inline tugma bosilganda
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
 
-    if not context.user_data.get("phone_number"):
-        contact_button = KeyboardButton("📱 Raqam yuborish", request_contact=True)
-        contact_keyboard = ReplyKeyboardMarkup(
-            [[contact_button]], resize_keyboard=True, one_time_keyboard=True
-        )
-        await query.message.reply_text(
-            "Iltimos, avval telefon raqamingizni yuboring:",
-            reply_markup=contact_keyboard
-        )
-        return
-
     text = BUTTONS.get(query.data, "Topilmadi.")
     await query.edit_message_text(text)
+
 
 # Telefon raqami qabul qilganda
 async def contact_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
