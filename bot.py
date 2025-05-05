@@ -20,7 +20,9 @@ import os
 load_dotenv()
 
 # Tokenni olish
-TOKEN = os.getenv("BOT_TOKEN")
+TOKEN = os.getenv("7580446562:AAF6GnQlh_9cCZ5SnXOTUZ83FRphYUuaUxA")
+if not TOKEN:
+    raise ValueError("7580446562:AAF6GnQlh_9cCZ5SnXOTUZ83FRphYUuaUxA not found in .env file.")
 
 # Tugmalar ro'yxati
 BUTTONS = {
@@ -90,4 +92,5 @@ if __name__ == '__main__':
     app.add_handler(MessageHandler(filters.CONTACT, contact_handler))
     app.add_handler(MessageHandler(filters.TEXT & filters.Regex("🧩 Tugmalarni tanlash"), show_buttons_again))
 
-    app.run_polling()
+    # Handling graceful shutdown
+    app.run_polling(drop_pending_updates=True)
