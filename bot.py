@@ -15,14 +15,11 @@ from telegram.ext import (
     ContextTypes,
     filters,
 )
-from dotenv import load_dotenv
 import os
 
-load_dotenv()
-
-TOKEN = os.getenv("TOKEN")
+TOKEN = os.environ.get("TOKEN")
 if not TOKEN:
-    raise ValueError("TOKEN not found in .env file.")
+    raise ValueError("TOKEN environment variable not set.")
 
 # Tugmalar ro'yxati
 BUTTONS = {
@@ -52,7 +49,6 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
 
-    # Telefon raqami bo'lmasa so'raymiz
     if not context.user_data.get("phone_number"):
         contact_button = KeyboardButton("📱 Raqam yuborish", request_contact=True)
         contact_keyboard = ReplyKeyboardMarkup(
@@ -72,7 +68,6 @@ async def contact_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     contact = update.message.contact
     if contact:
         context.user_data["phone_number"] = contact.phone_number
-
         await update.message.reply_text(
             "✅ Raqamingiz qabul qilindi. Endi menyudan foydalanishingiz mumkin.",
             reply_markup=ReplyKeyboardRemove()
