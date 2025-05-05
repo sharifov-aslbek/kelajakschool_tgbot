@@ -16,11 +16,10 @@ from telegram.ext import (
 from dotenv import load_dotenv
 import os
 
-# .env faylini yuklash
-load_dotenv()
+load_dotenv()  
 
 # Tokenni olish
-TOKEN = os.getenv("7580446562:AAF6GnQlh_9cCZ5SnXOTUZ83FRphYUuaUxA")
+TOKEN = os.getenv("TOKEN")
 if not TOKEN:
     raise ValueError("7580446562:AAF6GnQlh_9cCZ5SnXOTUZ83FRphYUuaUxA not found in .env file.")
 
